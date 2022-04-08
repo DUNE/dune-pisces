@@ -1,2 +1,2 @@
 # dune-pisces
-DUNE interface to the PISCES analysis and fitting framework 
+DUNE interface to the PISCES analysis and fitting framework

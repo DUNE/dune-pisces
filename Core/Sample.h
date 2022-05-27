@@ -11,10 +11,26 @@
 
 namespace pisces {
 
+  class OscChannel;
+
   using namespace ana;
 
-  enum Selection { kCCNumu, kCCNumuQ1, kCCNumuQ2, kCCNumuQ3, kCCNumuQ4,
-                   kCCNue, kNCOld, kNCRes10, kNCRes20, kNCRes30 };
+  void Error(const std::string& msg); // utility function for throwing an error
+  void Usage(char** argv, const std::string& args=""); // utility function for printing arguments
+
+  enum Selection
+  {
+    kCCNumu,
+    kCCNumuQ1,
+    kCCNumuQ2,
+    kCCNumuQ3,
+    kCCNumuQ4,
+    kCCNue,
+    kNCOld,
+    kNCRes10,
+    kNCRes20,
+    kNCRes30
+  };
   enum Polarity { kFHC, kRHC };
   enum Detector { kNearDet, kFarDet };
 
@@ -24,7 +40,8 @@ namespace pisces {
     // define size of each enum so we can bit shift
     const size_t nBitsSel = 6, nBitsPol = 2, nBitsDet = 2;
 
-    const std::map<Selection, std::pair<std::string, std::string>> kSelNames {
+    const std::map<Selection, std::pair<std::string, std::string>> kSelNames
+    {
       { kCCNumu,   { "numusel",    "CC $\\nu_{\\mu}$"    } },
       { kCCNumuQ1, { "numuq1sel",  "CC $\\nu_{\\mu}$ Q1" } },
       { kCCNumuQ2, { "numuq2sel",  "CC $\\nu_{\\mu}$ Q2" } },
@@ -37,12 +54,14 @@ namespace pisces {
       { kNCRes30,  { "ncres30sel", "NC (30% res)"        } }
     };
 
-    const std::map<Polarity, std::pair<std::string, std::string>> kPolNames {
+    const std::map<Polarity, std::pair<std::string, std::string>> kPolNames
+    {
       { kFHC, { "fhc", "FHC" } },
       { kRHC, { "rhc", "RHC" } }
     };
 
-    const std::map<Detector, std::pair<std::string, std::string>> kDetNames {
+    const std::map<Detector, std::pair<std::string, std::string>> kDetNames
+    {
       { kNearDet, { "neardet", "ND" } },
       { kFarDet, { "fardet", "FD" } }
     };
@@ -57,14 +76,12 @@ namespace pisces {
     Sample(Selection s, Polarity p, Detector d);
     Sample(unsigned int id);
 
-    std::string SelStr()    const { return kSelNames.at(fSel).first; }
-    std::string PolStr()    const { return kPolNames.at(fPol).first; }
-    std::string DetStr()    const { return kDetNames.at(fDet).first; }
+    std::string SelStr() const { return kSelNames.at(fSel).first; }
+    std::string PolStr() const { return kPolNames.at(fPol).first; }
+    std::string DetStr() const { return kDetNames.at(fDet).first; }
 
-    std::string Name()      const
-    { return SelStr()+" "+PolStr()+" "+DetStr(); }
-    std::string Tag()       const
-    { return SelStr()+"_"+PolStr()+"_"+DetStr(); }
+    std::string Name() const { return SelStr()+" "+PolStr()+" "+DetStr(); }
+    std::string Tag() const { return SelStr()+"_"+PolStr()+"_"+DetStr(); }
     std::string LatexName() const
     {
       std::stringstream oss;
@@ -79,13 +96,11 @@ namespace pisces {
     void SetPOT(double d)      { fPOT      = d; }
     void SetLivetime(double l) { fLivetime = l; }
 
-    void SetPrediction(std::unique_ptr<IPrediction>& p)
-    { fPred = std::move(p); }
+    void SetPrediction(std::unique_ptr<IPrediction>& p) { fPred = std::move(p); }
     void SetCosmic(Spectrum s) { fCosmic = s; }
     void SetData(Spectrum s)   { fData   = s; }
 
-    void SetSystAlias(const ISyst* key, const ISyst* val)
-    { fSystMap[key] = val; }
+    void SetSystAlias(const ISyst* key, const ISyst* val) { fSystMap[key] = val; }
     void SetAuxiliary(bool val) { fIsAux = val; };
 
     Selection Sel() const { return fSel; }
@@ -99,21 +114,30 @@ namespace pisces {
     double         POT()        const;
     double         Livetime()   const;
 
-    Spectrum Predict(osc::IOscCalc* calc) const;
-    Spectrum PredictComponent(osc::IOscCalc* calc,
-                              Flavors::Flavors_t flav,
+    std::vector<OscChannel> AllChannels() const;
+    bool IsSignal(const OscChannel& c) const;
+    std::vector<OscChannel> SignalChannels() const;
+    std::vector<OscChannel> BackgroundChannels() const;
+
+    Spectrum Predict(osc::IOscCalc* calc,
+                     const SystShifts& shifts=kNoShift) const;
+    Spectrum PredictComponent(Flavors::Flavors_t flav,
                               Current::Current_t curr,
-                              Sign::Sign_t sign) const;
-    Spectrum PredictSyst(osc::IOscCalc* calc,
-                         const SystShifts& syst) const;
-    Spectrum PredictComponentSyst(osc::IOscCalc* calc,
-                                  const SystShifts& syst,
-                                  Flavors::Flavors_t flav,
-                                  Current::Current_t curr,
-                                  Sign::Sign_t sign) const;
+                              Sign::Sign_t sign,
+                              osc::IOscCalc* calc,
+                              const SystShifts& shifts=kNoShift) const;
+    Spectrum PredictChannel(const OscChannel& channel,
+                            osc::IOscCalc* calc,
+                            const SystShifts& shifts=kNoShift) const;
+    Spectrum PredictSignal(osc::IOscCalc* calc,
+                           const SystShifts& shifts=kNoShift) const;
+    Spectrum PredictBackground(osc::IOscCalc* calc,
+                               const SystShifts& shifts=kNoShift) const;
 
     Spectrum Data()   const;
     Spectrum Cosmic() const;
+
+    Spectrum NewSpectrum(const Eigen::ArrayXd& arr) const;
 
     SystShifts Shifts(SystShifts shifts) const;
     std::vector<const ISyst*> Systs(std::vector<const ISyst*> systs) const;
@@ -129,16 +153,11 @@ namespace pisces {
 
     unsigned int GetID() const;
     static std::string EnsembleID(const std::vector<Sample>& samples);
-    static std::vector<Sample> FromEnsembleID(std::string const& id);
+    static std::vector<Sample> FromEnsembleID(const std::string& id);
 
-    bool operator< (const Sample& lhs) const
-    { return lhs.GetID() < this->GetID(); }
-
-    bool operator==(const Sample& lhs) const
-    { return lhs.GetID() == this->GetID(); }
-
-    bool operator!=(const Sample& lhs) const
-    { return lhs.GetID() != this->GetID(); }
+    bool operator< (const Sample& lhs) const { return lhs.GetID() < this->GetID(); }
+    bool operator==(const Sample& lhs) const { return lhs.GetID() == this->GetID(); }
+    bool operator!=(const Sample& lhs) const { return lhs.GetID() != this->GetID(); }
 
     static std::vector<Sample> All();
 
@@ -152,23 +171,25 @@ namespace pisces {
 
   protected:
 
+    std::shared_ptr<IPrediction> Prediction() const;
+
     Selection fSel;
     Polarity  fPol;
     Detector  fDet;
 
-    HistAxis fAxis;
-    Cut      fCut;
-    double   fPOT;
-    double   fLivetime;
+    HistAxis fAxis = kEmptyAxis;
+    Cut      fCut = kNoCut;
+    double   fPOT = -1;
+    double   fLivetime = -1;
 
     std::shared_ptr<IPrediction> fPred;
 
-    Spectrum fData;
-    Spectrum fCosmic;
+    Spectrum fData = Spectrum::Uninitialized();
+    Spectrum fCosmic = Spectrum::Uninitialized();
 
     std::map<const ISyst*, const ISyst*> fSystMap;
 
-    bool fIsAux;
+    bool fIsAux = false;
 
     friend class Ensemble;
 

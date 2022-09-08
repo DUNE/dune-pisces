@@ -8,10 +8,12 @@ add_library(${LIBRARY} SHARED
 	    ${SOURCES}
 )
 
+# currently depends on full CAFAna... at some point hope this won't be the case
 target_link_directories(${LIBRARY}
         PUBLIC $ENV{CAFANACORE_LIB}
         PUBLIC $ENV{CAFANA_LIB}
 )
+# may not need all these libraries -- will tidy it up as the dependency on CAFAna slowly unravels over time (well, that's the idea...)
 target_link_libraries(${LIBRARY}
         PUBLIC CAFAnaCoreExt
         PUBLIC CAFAnaAnalysis

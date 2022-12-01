@@ -12,6 +12,7 @@ add_library(${LIBRARY} SHARED
 target_link_directories(${LIBRARY}
         PUBLIC $ENV{CAFANACORE_LIB}
         PUBLIC $ENV{CAFANA_LIB}
+        PUBLIC $ENV{DUNEANAOBJ_LIB}
 )
 # may not need all these libraries -- will tidy it up as the dependency on CAFAna slowly unravels over time (well, that's the idea...)
 target_link_libraries(${LIBRARY}
@@ -26,6 +27,7 @@ target_link_libraries(${LIBRARY}
         PUBLIC CAFAnaPrediction
         PUBLIC CAFAnaSysts
         PUBLIC CAFAnaVars
+        PUBLIC duneanaobj_StandardRecordProxy
 )
 link_root(${LIBRARY})
 

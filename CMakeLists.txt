@@ -40,6 +40,8 @@ include_directories(
   $ENV{EIGEN_INC}
   $ENV{TBB_INC}
   $ENV{DUNEPISCES_DIR}
+  $ENV{DUNEANAOBJ_INC}
+  $ENV{SRPROXY_INC}
 )
 
 function(link_root target)

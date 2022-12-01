@@ -32,7 +32,7 @@ libdir product_dir lib
 product          version
 cetbuildtools    v8_18_09      - only_for_build
 #cafanacore       v01.26
-dunecore         v09_52_00d00
+dunecore         v09_63_01d00
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
